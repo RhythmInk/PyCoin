@@ -4,10 +4,11 @@ import hashlib as hl
 import json
 import pickle
 
-from utility.hash_util    import hash_block
-from block        import Block
-from transaction  import Transaction
-from verification import Verification
+from block             import Block
+from transaction       import Transaction
+from utility.hash_util import hash_block
+from verification      import Verification
+from wallet            import Wallet
 
 # The reward we give to miners (for creating a new block)
 MINING_REWARD = 10
@@ -15,15 +16,17 @@ MINING_REWARD = 10
 
 class Blockchain:
 
+
     def __init__(self, hosting_node_id):
-        genesis_block = Block(0, '', [], 0, 0)
-        self.chain = [genesis_block]
+        genesis_block          = Block(0, '', [], 0, 0)
+        self.chain             = [genesis_block]
         self.open_transactions = []
         self.load_data()
-        self.hosting_node = hosting_node_id
+
+        self.hosting_node      = hosting_node_id
 
 
-    def load_data(self) -> None:
+    def load_data(self):
         try:
             with open('blockchain.txt', mode='r') as f:
                 file_content = f.readlines()
@@ -49,7 +52,7 @@ class Blockchain:
             pass
 
 
-    def save_data(self) -> None:
+    def save_data(self):
         try:
             with open('blockchain.txt', mode='w') as f:
             	# cycle through all attribute for each block in chain
@@ -66,10 +69,7 @@ class Blockchain:
             print('Saving Failed!')
 
 
-    def proof_of_work(self) -> int:
-        '''
-		Guess proof of work numbers until a valid proof is found.
-        '''
+    def proof_of_work(self):
         last_block = self.chain[-1]
         last_hash = hash_block(last_block)
         proof = 0
@@ -79,7 +79,7 @@ class Blockchain:
         return proof
 
 
-    def get_balance(self) -> float:
+    def get_balance(self):
         user = self.hosting_node
 
         tx_sender = [[tx.amount for tx in block.transactions
@@ -100,18 +100,22 @@ class Blockchain:
         return amount_received - amount_sent
 
 
-    def get_last_blockchain_value(self) -> Block:
+    def get_last_blockchain_value(self):
         if len(self.chain) < 1:
             return None
         return self.chain[-1]
 
 
-    def add_transaction(self, recipient: str, sender:str , amount: float=0.0) -> bool:
+    def add_transaction(self, recipient, sender, amount):
         # transaction = {
         #     'sender': sender,
         #     'recipient': recipient,
         #     'amount': amount
         # }
+
+        # ensure node id was set
+        if self.hosting_node == None:
+            return False
         transaction = Transaction(sender, recipient, amount)
 
         if Verification.verify_transaction(transaction, self.get_balance):
@@ -123,7 +127,7 @@ class Blockchain:
         return False
 
 
-    def mine_block(self) -> bool:
+    def mine_block(self):
         last_block = self.chain[-1]
 
         # include previous blocks hash

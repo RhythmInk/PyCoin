@@ -4,7 +4,7 @@ class Verification:
 
 
     @staticmethod
-    def valid_proof(transactions, last_hash, proof) -> bool:
+    def valid_proof(transactions, last_hash, proof):
 
         guess = (str([tx.to_ordered_dict() for tx in transactions]) +  str(last_hash) + str(proof)).encode()
         guess_hash = hash_string_512(guess)
@@ -20,13 +20,13 @@ class Verification:
         return sender_balance >= transaction.amount
 
     @classmethod
-    def verify_transactions(cls, open_transactions, get_balance) -> bool:
+    def verify_transactions(cls, open_transactions, get_balance):
 
         return all([cls.verify_transaction(tx, get_balance) for tx in open_transactions])
 
 
     @classmethod
-    def verify_chain(cls, blockchain) -> bool:
+    def verify_chain(cls, blockchain):
 
         for (index, block) in enumerate(blockchain):
             if index == 0:
